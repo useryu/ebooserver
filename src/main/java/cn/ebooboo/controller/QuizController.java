@@ -36,7 +36,7 @@ public class QuizController extends Controller{
 	}
 	
 	private List<Quiz> getQuiz(int chapterId) {
-		List<Quiz> quizs = Quiz.dao.find("select * from quiz where chapter_id=?", chapterId);
+		List<Quiz> quizs = Quiz.dao.find("select * from quiz where chapter_id=? order by chapter_id,no", chapterId);
 		for(Quiz q:quizs) {
 			q.put("options", QuizOption.dao.find("select * from quiz_option where quiz_id=?", q.getId()));
 		}
@@ -47,8 +47,13 @@ public class QuizController extends Controller{
 		renderJson(this.getQuiz(0));
 	}
 	
-	public void getChapterQuiz() {
-		renderJson(this.getQuiz(super.getParaToInt("chapter_id")));
+	public void getBookQuiz() {
+		Integer bookId = super.getParaToInt("book_id");
+		List<Quiz> quizs = Quiz.dao.find("select * from quiz where chapter_id in (select id from chapter where book_id=?)  order by chapter_id,no", bookId);
+		for(Quiz q:quizs) {
+			q.put("options", QuizOption.dao.find("select * from quiz_option where quiz_id=?", q.getId()));
+		}
+		renderJson(quizs);
 	}
 	
 	public void loadLevelQuiz() {
