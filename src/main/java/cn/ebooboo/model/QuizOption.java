@@ -9,5 +9,7 @@ import cn.ebooboo.util.Model;
 @SuppressWarnings("serial")
 @Model
 public class QuizOption extends BaseQuizOption<QuizOption> {
+
+	public static final QuizOption dao = new QuizOption().dao();
 	
 }

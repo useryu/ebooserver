@@ -11,10 +11,13 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<jdk.version>1.7</jdk.version>
-		<spring.version>4.2.1.RELEASE</spring.version>
 		<mysql.driver.version>5.1.6</mysql.driver.version>
 		<servletapi.version>3.1.0</servletapi.version>
 		<json.version>20160810</json.version>
+		<jfinal.version>3.0</jfinal.version>
+		<log4j.version>1.2.15</log4j.version>
+		<druid.version>1.0.29</druid.version>
+		<junit.version>4.10</junit.version>
 	</properties>
 
 
@@ -23,12 +26,12 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>druid</artifactId>
-			<version>1.0.29</version>
+			<version>${druid.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.jfinal</groupId>
 			<artifactId>jfinal</artifactId>
-			<version>3.0</version>
+			<version>${jfinal.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
@@ -47,9 +50,15 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.15</version>
+			<version>${log4j.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.mail</groupId>
