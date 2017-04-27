@@ -1,0 +1,36 @@
+ {
+     "button":[
+        {
+            "name": "扫码", 
+            "sub_button": [
+                {
+                    "type": "scancode_waitmsg", 
+                    "name": "扫码推事件", 
+                    "key": "rselfmenu_0_0"
+                }, 
+                {
+                    "type": "scancode_push", 
+                    "name": "扫码带提示", 
+                    "key": "rselfmenu_0_1"
+                }
+            ]
+        }, 
+      {
+           "name":"活动",
+           "sub_button":[
+           {	
+               "type":"view",
+               "name":"最近活动",
+               "url":"https://12849517.ebooboo.cn/activity/list"
+            }]
+       },
+      {
+           "name":"学习",
+           "sub_button":[
+           {	
+               "type":"view",
+               "name":"测试级别",
+               "url":"https://12849517.ebooboo.cn/wxquiz"
+            }]
+       }]
+ }

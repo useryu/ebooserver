@@ -45,5 +45,14 @@ public class FileUtil {
 			}
 		}
 	}
+
+	public static String loadJsonFile(String fileName, String encoding) {
+		List<String> lines = loadFile(fileName,encoding);
+		StringBuffer sb = new StringBuffer();
+		for(String line:lines) {
+			sb.append(line.trim());
+		}
+		return sb.toString();
+	}
 	
 }

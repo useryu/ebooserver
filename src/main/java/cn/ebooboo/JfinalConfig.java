@@ -1,13 +1,16 @@
 package cn.ebooboo;
 
-import java.io.IOException;
-
 import com.jfinal.config.*;
+import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.druid.DruidPlugin;
+import com.jfinal.render.ViewType;
 import com.jfinal.template.Engine;
+import com.jfinal.weixin.sdk.api.ApiConfigKit;
 
+import cn.ebooboo.controller.ActivityController;
 import cn.ebooboo.controller.AudioController;
+import cn.ebooboo.controller.IndexController;
 import cn.ebooboo.controller.LoginController;
 import cn.ebooboo.controller.ResourceController;
 import cn.ebooboo.controller.QuizController;
@@ -15,8 +18,12 @@ import cn.ebooboo.controller.TunnelController;
 import cn.ebooboo.controller.UserController;
 import cn.ebooboo.controller.admin.AdminController;
 import cn.ebooboo.controller.admin.BookController;
+import cn.ebooboo.controller.mp.Oauth2Controller;
+import cn.ebooboo.controller.mp.ShareController;
+import cn.ebooboo.controller.mp.WeixinApiController;
+import cn.ebooboo.controller.mp.WeixinMsgController;
+import cn.ebooboo.controller.mp.WxQuizController;
 import cn.ebooboo.model._MappingKit;
-import cn.ebooboo.util.ModelScanner;
 
 public class JfinalConfig extends JFinalConfig {
 	
@@ -28,8 +35,13 @@ public class JfinalConfig extends JFinalConfig {
 		QCloud.setupSDK();
 		IS_PRODUCT_ENV = "prod".equals(env);
 		me.setDevMode(!IS_PRODUCT_ENV);
-		loadPropertyFile("/config/"+env+"/conf.properties");
+		String configFile = "/config/"+env+"/conf.properties";
+		loadPropertyFile(configFile);
+		PropKit.use(configFile);
 		me.setBaseDownloadPath(getProperty("file_download_path"));
+		me.setEncoding("utf-8");
+		me.setViewType(ViewType.JSP);
+		ApiConfigKit.setDevMode(me.getDevMode());
 	}
 
 	public void configRoute(Routes me) {
@@ -42,6 +54,16 @@ public class JfinalConfig extends JFinalConfig {
 		
 		me.add("/admin", AdminController.class);
 		me.add("/book", BookController.class);
+		
+		//www
+		me.add("/", IndexController.class,"/");
+		
+		me.add("/wxmsg", WeixinMsgController.class);
+		me.add("/wxapi", WeixinApiController.class);
+		me.add("/activity", ActivityController.class);
+		me.add("/oauth2", Oauth2Controller.class);
+		me.add("/jssdk", ShareController.class,"_front");
+		me.add("/wxquiz", WxQuizController.class,"_front");
 	}
 
 	public void configEngine(Engine me) {

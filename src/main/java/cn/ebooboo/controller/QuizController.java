@@ -3,7 +3,6 @@ package cn.ebooboo.controller;
 import java.util.List;
 
 import com.jfinal.aop.Before;
-import com.jfinal.core.Controller;
 
 import cn.ebooboo.JfinalConfig;
 import cn.ebooboo.common.interceptor.LoginInterceptor;
@@ -12,7 +11,7 @@ import cn.ebooboo.model.QuizOption;
 import cn.ebooboo.model.User;
 import cn.ebooboo.service.QuizLoaderService;
 
-public class QuizController extends Controller{
+public class QuizController extends BaseController{
 
 	public void index() {
 		renderJson("test");

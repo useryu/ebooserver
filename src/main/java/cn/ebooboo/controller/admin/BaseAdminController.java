@@ -15,34 +15,10 @@ import com.jfinal.core.Controller;
 
 import cn.ebooboo.JfinalConfig;
 import cn.ebooboo.common.interceptor.AdminInterceptor;
+import cn.ebooboo.controller.BaseController;
 
 @Before(AdminInterceptor.class)
-public class BaseAdminController extends Controller{
-	
-	public JSONObject getReqJson(HttpServletRequest request, HttpServletResponse response) {
-		
-		String requestContent = getRequestJsonStr(request);
-		
-		// 2. 读取报文内容成 JSON 并保存在 body 变量中
-		JSONObject body = new JSONObject(requestContent);
-		return body;
-	}
-
-	public String getRequestJsonStr(HttpServletRequest request) {
-		String requestContent = null;
-
-		// 1. 读取报文内容
-		try {
-			BufferedReader requestReader = new BufferedReader(new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8));
-			requestContent = "";
-			for (String line; (line = requestReader.readLine()) != null;) {
-				requestContent += line;
-			}
-		} catch (IOException e) {
-			
-		}
-		return requestContent;
-	}
+public class BaseAdminController extends BaseController{
 
 	public void setAllowCrossDomain(HttpServletResponse response) {
 		if (!JfinalConfig.IS_PRODUCT_ENV) {
