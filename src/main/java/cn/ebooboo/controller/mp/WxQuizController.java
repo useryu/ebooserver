@@ -59,7 +59,7 @@ public class WxQuizController extends ApiController {
 		setAttr("url", url);
 		setAttr("signature", signature);
 		setAttr("jsapi_ticket", jsapi_ticket);
-
+		setAttr("base",super.getRequest().getContextPath());
 		render("wxquiz.jsp");
 	}
 
