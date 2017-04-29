@@ -1,7 +1,7 @@
 package com.qcloud.weapp.tunnel;
 
 import java.util.ArrayList;
-import java.util.function.Predicate;
+//import java.util.function.Predicate;
 
 /**
  * 房间维护一批信道的集合，可以通过广播方法向房间里的所有信道推送消息
@@ -47,12 +47,12 @@ public class TunnelRoom {
 	 * @param tunnelId 要移除的信道的 ID
 	 * */
 	public void removeTunnelById (final String tunnelId) {
-		tunnels.removeIf(new Predicate<Tunnel>() {
-			@Override
-			public boolean test(Tunnel t) {
-				return t.getTunnelId().equals(tunnelId);
-			}
-		});
+//		tunnels.removeIf(new Predicate<Tunnel>() {
+//			@Override
+//			public boolean test(Tunnel t) {
+//				return t.getTunnelId().equals(tunnelId);
+//			}
+//		});
 	}
 	
 	/**

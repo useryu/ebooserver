@@ -1,20 +1,5 @@
  {
      "button":[
-        {
-            "name": "扫码", 
-            "sub_button": [
-                {
-                    "type": "scancode_waitmsg", 
-                    "name": "扫码推事件", 
-                    "key": "rselfmenu_0_0"
-                }, 
-                {
-                    "type": "scancode_push", 
-                    "name": "扫码带提示", 
-                    "key": "rselfmenu_0_1"
-                }
-            ]
-        }, 
       {
            "name":"活动",
            "sub_button":[
@@ -28,9 +13,11 @@
            "name":"学习",
            "sub_button":[
            {	
-               "type":"view",
-               "name":"测试级别",
-               "url":"https://12849517.ebooboo.cn/wxquiz"
+                "type":"miniprogram",
+                 "name":"打开小程序",
+                 "url":"https://12849517.ebooboo.cn/",
+                 "appid":"wxb6d257422d854588",
+                 "pagepath":"pages/index/index"
             }]
        }]
  }

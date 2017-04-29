@@ -37,6 +37,7 @@ public class UserController extends BaseController{
 				user.save();
 				user = User.dao.findFirst("select * from user where id=?", userInfo.getUserid());
 			}
+			user = User.dao.findFirst("select * from user where id=?", userInfo.getUserid());
 			data.put("user", new JSONObject(user));
 			result.put("code", 0);
 			result.put("message", "OK");
