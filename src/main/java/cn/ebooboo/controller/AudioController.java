@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.qcloud.weapp.ConfigurationException;
@@ -62,12 +63,15 @@ public class AudioController extends BaseController{
 	
 	public void list() {
 		HttpServletResponse response = getResponse();
+		String bookId = super.getPara("bookId");
+		bookId=StrKit.isBlank(bookId)?"0":bookId;
+		logger.info("get bookId:"+bookId+" to fetch audio list.");
 		try {
 			// 调用检查登录接口，成功后可以获得用户信息，进行正常的业务请求
-			String query= "SELECT a.id,a.url,c.chapter_name as chaptername,b.name as bookname FROM `audio` a left join chapter c on a.chapter_id=c.id left join book b on c.book_id=b.id";
+			String query= "SELECT a.id,a.url,c.chapter_name as chaptername,b.name as bookname FROM `audio` a left join chapter c on a.chapter_id=c.id left join book b on c.book_id=b.id where b.id=?";
 			// 获取会话成功，输出获得的用户信息			
 			JSONObject result = new JSONObject();
-			List<Record> list = Db.find(query);
+			List<Record> list = Db.find(query, Integer.parseInt(bookId));
 			result.put("code", 0);
 			result.put("message", "OK");
 			result.put("list", VoBuilder.fetchColumn(list));			

@@ -3,6 +3,7 @@ package cn.ebooboo.controller;
 import java.util.List;
 
 import com.jfinal.aop.Before;
+import com.jfinal.kit.StrKit;
 
 import cn.ebooboo.JfinalConfig;
 import cn.ebooboo.common.interceptor.LoginInterceptor;
@@ -47,7 +48,8 @@ public class QuizController extends BaseController{
 	}
 	
 	public void getBookQuiz() {
-		Integer bookId = super.getParaToInt("book_id");
+		String bookId = super.getPara("bookId");
+		bookId=StrKit.isBlank(bookId)?"0":bookId;
 		List<Quiz> quizs = Quiz.dao.find("select * from quiz where chapter_id in (select id from chapter where book_id=?)  order by chapter_id,no", bookId);
 		for(Quiz q:quizs) {
 			q.put("options", QuizOption.dao.find("select * from quiz_option where quiz_id=?", q.getId()));

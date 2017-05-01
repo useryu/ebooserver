@@ -83,6 +83,7 @@ Array.prototype.remove = function(s) {
 			      }
 			    }
 			    console.log(pointer);
+			    alert('你做对的题目数量：'+(pointer-1));
 			  }
 			}
 		});

@@ -24,5 +24,20 @@ public abstract class BaseBook<M extends BaseBook<M>> extends Model<M> implement
 	public java.lang.String getName() {
 		return get("name");
 	}
+	
+	public void setNo(java.lang.String no) {
+		set("no", no);
+	}
+	
+	public java.lang.String getNo() {
+		return get("no");
+	}
 
+	public java.lang.Integer getLevel() {
+		return get("level");
+	}
+
+	public void setLevel(java.lang.String level) {
+		set("level", level);
+	}
 }

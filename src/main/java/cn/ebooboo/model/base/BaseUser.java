@@ -64,5 +64,13 @@ public abstract class BaseUser<M extends BaseUser<M>> extends Model<M> implement
 	public java.lang.Integer getLevel() {
 		return get("level");
 	}
+	
+	public void setReadingBookId(java.lang.Integer bookId) {
+		set("reading_book_id", bookId);
+	}
+	
+	public java.lang.Integer getReadingBookId() {
+		return get("reading_book_id");
+	}
 
 }

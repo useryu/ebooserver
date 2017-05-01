@@ -22,6 +22,7 @@ public class _MappingKit {
 		arp.addMapping("audio", "id", Audio.class);
 		arp.addMapping("audio_result", "id", AudioResult.class);
 		arp.addMapping("book", "id", Book.class);
+		arp.addMapping("book_result", "id", BookResult.class);
 		arp.addMapping("chapter", "id", Chapter.class);
 		arp.addMapping("quiz", "id", Quiz.class);
 		arp.addMapping("quiz_option", "id", QuizOption.class);
