@@ -41,7 +41,13 @@ public class AudioController extends BaseController{
 				user.save();
 				user = User.dao.findFirst("select * from user where id=?", userInfo.getUserid());
 			}
-			Db.update("insert into audio_result (audio_id,user_id,is_done) values (?, ? ,1)", super.getParaToInt("id"), userInfo.getUserid());
+			
+			String isDone = "select is_done from audio_result where user_id=? and audio_id=?";
+			Object doneResult = Db.queryFirst(isDone, userInfo.getUserid(), super.getParaToInt("id"));
+			if(doneResult==null) {
+				Db.update("insert into audio_result (audio_id,user_id,is_done) values (?, ? ,1)", super.getParaToInt("id"), userInfo.getUserid());
+			}
+			this.setBookResult(user, super.getParaToInt("id"));
 			data.put("audio_id", super.getParaToInt("id"));
 			result.put("code", 0);
 			result.put("message", "OK");
@@ -61,6 +67,13 @@ public class AudioController extends BaseController{
 		super.renderNull();
 	}
 	
+
+	//TODO if all audio in a book is done, set book_reasult
+	private void setBookResult(User user, Integer bookId) {
+		String querySql = "select a.id,ar.is_done from audio a left join audio_result ar on ar.audio_id=a.id left join chapter c on a.chapter_id=c.id where ar.user_id=? and c.book_id=?";
+		
+	}
+
 	public void list() {
 		HttpServletResponse response = getResponse();
 		String bookId = super.getPara("bookId");
