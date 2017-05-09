@@ -7,6 +7,7 @@ import com.jfinal.kit.StrKit;
 
 import cn.ebooboo.JfinalConfig;
 import cn.ebooboo.common.interceptor.LoginInterceptor;
+import cn.ebooboo.model.BookResult;
 import cn.ebooboo.model.Quiz;
 import cn.ebooboo.model.QuizOption;
 import cn.ebooboo.model.User;
@@ -33,6 +34,27 @@ public class QuizController extends BaseController{
 			user.update();
 		}
 		renderJson(1);
+	}
+	
+	@Before(LoginInterceptor.class)
+	public void submitBookQuizPoint() {
+		int point = super.getParaToInt("point",-1);
+		int total = super.getParaToInt("total",-1);
+		int bookId = super.getParaToInt("bookId",-1);
+		String userId = (String)getRequest().getAttribute("userid");
+		int isDone=point*0.1/total*1000>=80?1:0;//超过80%认为通过
+		BookResult br = BookResult.dao.findFirst("select * from book_result br where user_id=? and book_id=?", userId, bookId);
+		if(br==null) {
+			br = new BookResult();
+			br.setQuizIsDone(isDone);
+			br.setUserId(userId);
+			br.setBookId(bookId);
+			br.save();
+		} else {
+			br.setQuizIsDone(isDone);
+			br.update();
+		}
+		renderJson(br);
 	}
 	
 	private List<Quiz> getQuiz(int chapterId) {
