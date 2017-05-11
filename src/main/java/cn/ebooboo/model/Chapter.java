@@ -9,5 +9,7 @@ import cn.ebooboo.util.Model;
 @SuppressWarnings("serial")
 @Model
 public class Chapter extends BaseChapter<Chapter> {
+
+	public static Chapter dao = new Chapter().dao();
 	
 }

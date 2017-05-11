@@ -7,7 +7,7 @@ import com.jfinal.kit.StrKit;
 import cn.ebooboo.JfinalConfig;
 import cn.ebooboo.model.Quiz;
 import cn.ebooboo.model.QuizOption;
-import cn.ebooboo.service.QuizLoaderService;
+import cn.ebooboo.service.LoaderService;
 
 public class AssistController extends BaseController{
 
@@ -30,7 +30,7 @@ public class AssistController extends BaseController{
 		if(JfinalConfig.IS_PRODUCT_ENV) {
 			fileName="/var/eboofiles/level_quiz.txt";
 		}
-		QuizLoaderService.me.load(fileName, 0);
+		LoaderService.me.loadQuiz(fileName, 0);
 		renderJson(1);
 	}
 }

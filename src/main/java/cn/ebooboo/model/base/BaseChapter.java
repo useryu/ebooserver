@@ -40,5 +40,13 @@ public abstract class BaseChapter<M extends BaseChapter<M>> extends Model<M> imp
 	public java.lang.String getMemo() {
 		return get("memo");
 	}
+	
+	public void setNo(java.lang.Integer memo) {
+		set("no", memo);
+	}
+	
+	public java.lang.Integer getNo() {
+		return get("no");
+	}
 
 }

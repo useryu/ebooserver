@@ -9,7 +9,7 @@ import cn.ebooboo.common.interceptor.LoginInterceptor;
 import cn.ebooboo.model.Quiz;
 import cn.ebooboo.model.QuizOption;
 import cn.ebooboo.model.User;
-import cn.ebooboo.service.QuizLoaderService;
+import cn.ebooboo.service.LoaderService;
 
 public class ActivityController extends BaseController{
 

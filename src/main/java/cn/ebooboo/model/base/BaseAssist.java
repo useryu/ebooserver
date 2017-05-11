@@ -25,12 +25,36 @@ public abstract class BaseAssist<M extends BaseAssist<M>> extends Model<M> imple
 		return get("chapter_id");
 	}
 
-	public void setContent(java.lang.String content) {
-		set("content", content);
+	public void setWord(java.lang.String word) {
+		set("word", word);
 	}
 
-	public java.lang.String getContent() {
-		return get("content");
+	public java.lang.String getWord() {
+		return get("word");
+	}
+	
+	public void setExample(java.lang.String example) {
+		set("example", example);
+	}
+	
+	public java.lang.String getExample() {
+		return get("example");
+	}
+	
+	public void setEnglishExplanation(java.lang.String englishExplanation) {
+		set("english_explanation", englishExplanation);
+	}
+	
+	public java.lang.String getEnglishExplanation() {
+		return get("english_explanation");
+	}
+	
+	public void setPicUrl(java.lang.String picUrl) {
+		set("pic_url", picUrl);
+	}
+	
+	public java.lang.String getPicUrl() {
+		return get("pic_url");
 	}
 
 }

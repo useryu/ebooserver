@@ -25,11 +25,11 @@ public abstract class BaseBook<M extends BaseBook<M>> extends Model<M> implement
 		return get("name");
 	}
 	
-	public void setNo(java.lang.String no) {
+	public void setNo(java.lang.Integer no) {
 		set("no", no);
 	}
 	
-	public java.lang.String getNo() {
+	public java.lang.Integer getNo() {
 		return get("no");
 	}
 
@@ -37,7 +37,7 @@ public abstract class BaseBook<M extends BaseBook<M>> extends Model<M> implement
 		return get("level");
 	}
 
-	public void setLevel(java.lang.String level) {
+	public void setLevel(java.lang.Integer level) {
 		set("level", level);
 	}
 }
