@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
@@ -17,6 +18,7 @@ import com.qcloud.weapp.authorization.LoginService;
 import com.qcloud.weapp.authorization.LoginServiceException;
 import com.qcloud.weapp.authorization.UserInfo;
 
+import cn.ebooboo.model.BookResult;
 import cn.ebooboo.model.User;
 import cn.ebooboo.util.VoBuilder;
 
@@ -25,6 +27,8 @@ public class AudioController extends BaseController{
 	public void playend() {
 		HttpServletResponse response = getResponse();
 		HttpServletRequest request = getRequest();
+		Integer audioId = super.getParaToInt("id");
+		Integer bookId = super.getParaToInt("bookId");
 		LoginService service = new LoginService(request, response);		
 		try {
 			// 调用检查登录接口，成功后可以获得用户信息，进行正常的业务请求
@@ -43,12 +47,12 @@ public class AudioController extends BaseController{
 			}
 			
 			String isDone = "select is_done from audio_result where user_id=? and audio_id=?";
-			Object doneResult = Db.queryFirst(isDone, userInfo.getUserid(), super.getParaToInt("id"));
+			Object doneResult = Db.queryFirst(isDone, userInfo.getUserid(), audioId);
 			if(doneResult==null) {
-				Db.update("insert into audio_result (audio_id,user_id,is_done) values (?, ? ,1)", super.getParaToInt("id"), userInfo.getUserid());
+				Db.update("insert into audio_result (audio_id,user_id,is_done) values (?, ? ,1)", audioId, userInfo.getUserid());
 			}
-			this.setBookResult(user, super.getParaToInt("id"));
-			data.put("audio_id", super.getParaToInt("id"));
+			BookResult br = this.setBookResult(user, bookId);
+			data.put("br", br);
 			result.put("code", 0);
 			result.put("message", "OK");
 			result.put("data", data);			
@@ -68,10 +72,32 @@ public class AudioController extends BaseController{
 	}
 	
 
-	//TODO if all audio in a book is done, set book_reasult
-	private void setBookResult(User user, Integer bookId) {
-		String querySql = "select a.id,ar.is_done from audio a left join audio_result ar on ar.audio_id=a.id left join chapter c on a.chapter_id=c.id where ar.user_id=? and c.book_id=?";
-		
+	//if all audio in a book is done, set book_reasult
+	private BookResult setBookResult(User user, Integer bookId) {
+		String querySql = "select ar.is_done from audio a left join audio_result ar on ar.audio_id=a.id left join chapter c on a.chapter_id=c.id where ar.user_id=? and c.book_id=?";
+		List<Integer> list = Db.query(querySql, user.getId(), bookId);
+		boolean isAllDone=true;
+		BookResult br = null;
+		for(Integer i:list) {
+			if(i==null || i==0) {
+				isAllDone=false;
+				break;
+			}
+		}
+		if(isAllDone) {
+			br = BookResult.dao.findFirst("select * from book_result br where br.user_id=? and book_id=? ", user.getId(), bookId);
+			if(br==null) {
+				br = new BookResult();
+				br.setUserId(user.getId());
+				br.setBookId(bookId);
+				br.setAudioIsDone(1);
+				br.save();
+			} else {
+				br.setAudioIsDone(1);
+				br.update();
+			}
+		}
+		return br;
 	}
 
 	public void list() {
@@ -80,8 +106,9 @@ public class AudioController extends BaseController{
 		bookId=StrKit.isBlank(bookId)?"0":bookId;
 		logger.info("get bookId:"+bookId+" to fetch audio list.");
 		try {
+			String urlPrefix = PropKit.get("resourcePrefix");
 			// 调用检查登录接口，成功后可以获得用户信息，进行正常的业务请求
-			String query= "SELECT a.id,a.url,c.chapter_name as chaptername,b.name as bookname FROM `audio` a left join chapter c on a.chapter_id=c.id left join book b on c.book_id=b.id where b.id=?";
+			String query= "SELECT a.id, CONCAT('"+urlPrefix +"',a.url) as url ,c.chapter_name as chaptername,b.name as bookname FROM `audio` a left join chapter c on a.chapter_id=c.id left join book b on c.book_id=b.id where b.id=?";
 			// 获取会话成功，输出获得的用户信息			
 			JSONObject result = new JSONObject();
 			List<Record> list = Db.find(query, Integer.parseInt(bookId));

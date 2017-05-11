@@ -9,6 +9,7 @@ import com.jfinal.template.Engine;
 import com.jfinal.weixin.sdk.api.ApiConfigKit;
 
 import cn.ebooboo.controller.ActivityController;
+import cn.ebooboo.controller.AssistController;
 import cn.ebooboo.controller.AudioController;
 import cn.ebooboo.controller.IndexController;
 import cn.ebooboo.controller.LoginController;
@@ -51,6 +52,7 @@ public class JfinalConfig extends JFinalConfig {
 		me.add("/tunnel", TunnelController.class);
 		me.add("/resource", ResourceController.class);
 		me.add("/audio", AudioController.class);
+		me.add("/assist", AssistController.class);
 		
 		me.add("/admin", AdminController.class);
 		me.add("/book", BookController.class);

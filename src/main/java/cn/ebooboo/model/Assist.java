@@ -9,5 +9,7 @@ import cn.ebooboo.util.Model;
 @SuppressWarnings("serial")
 @Model
 public class Assist extends BaseAssist<Assist> {
+
+	public static Assist dao = new Assist().dao();
 	
 }

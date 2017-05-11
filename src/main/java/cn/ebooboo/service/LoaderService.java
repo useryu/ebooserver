@@ -11,7 +11,9 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import com.jfinal.aop.Before;
+import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.tx.Tx;
 
 import cn.ebooboo.common.ZipUtil;
@@ -57,6 +59,44 @@ public class LoaderService {
 	}
 	
 	@Before(Tx.class)
+	public void removeAllInLevel(int level) {
+		List<Integer> bookIds = Db.query("select id from book where level=?",level);
+		this.removeAudioFile(level);
+		for(Integer bookId:bookIds) {
+			List<Integer> assistIds = Db.query("select id from assist where chapter_id in (select id from chapter where book_id=?)", bookId);
+			this.removePicFile(assistIds);
+			Db.update("delete from assist where chapter_id in (select id from chapter where book_id=?)", bookId);
+			Db.update("delete from audio where chapter_id in (select id from chapter where book_id=?)", bookId);
+			Db.update("delete from quiz where chapter_id in (select id from chapter where book_id=?)", bookId);
+			Db.update("delete from chapter where book_id=?", bookId);
+			Db.update("delete from book where level=?", level);
+		}
+	}
+	
+	private void removeAudioFile(int level) {
+		File dir = new File(PropKit.get("file_download_path"));
+		final String startPattern="a-"+level+"-";
+		File[] files = dir.listFiles(new FileFilter() {
+
+			@Override
+			public boolean accept(File f) {
+				return f.getName().startsWith(startPattern) && f.getName().endsWith(".mp3");
+			}
+			
+		});
+		for(File f:files) {
+			if(f.exists())f.delete();
+		}
+	}
+
+	private void removePicFile(List<Integer> assistIds) {
+		for(int assistId:assistIds) {
+			File f = new File(PropKit.get("file_download_path"), assistId+".jpg");
+			if(f.exists())f.delete();
+		}
+	}
+
+	@Before(Tx.class)
 	public void loadAll(String fileName) throws IOException {
 		File zipFile = new File(fileName);
 		String[] no = zipFile.getName().split("\\.");
@@ -75,10 +115,11 @@ public class LoaderService {
 					int chapterId=this.createChapterIfNotExist(bookId,chapterNo);
 					String chapterDir = targetDirPath+File.separator+bookNo+File.separator+chapterNo+File.separator;
 					this.loadChapterQuiz(chapterId, chapterDir);
-					this.loadAudio(chapterId, chapterDir, bookNo, chapterNo);
+					this.loadAudio(chapterId, chapterDir, level, bookNo, chapterNo, bookId);
 					this.loadAssist(chapterId, chapterDir);
 				}
 			}
+			zipFile.delete();
 		} else {
 			logger.info(fileName+" not a valid zip file");
 		}
@@ -97,6 +138,8 @@ public class LoaderService {
 				if(splitIndex>0) {
 					if(assist!=null) {
 						assist.save();
+						assist.setPicUrl(this.processWordPic(assist.getId(), assist.getWord(),targetDirPath));
+						assist.update();
 					}
 					assist=new Assist();
 					String[] fields = line.split("-");
@@ -107,11 +150,12 @@ public class LoaderService {
 						assist.setEnglishExplanation("");
 					}
 					assist.setChapterId(chapterId);
-					assist.setPicUrl(this.processWordPic(assist.getWord(),targetDirPath));
 				} else {
 					if(assist!=null) {
 						assist.setExample(line);
 						assist.save();
+						assist.setPicUrl(this.processWordPic(assist.getId(), assist.getWord(),targetDirPath));
+						assist.update();
 						assist=null;
 					} else {
 						logger.info("unknow word line:"+line);
@@ -120,42 +164,47 @@ public class LoaderService {
 			}
 			if(assist!=null) {
 				assist.save();
+				assist.setPicUrl(this.processWordPic(assist.getId(), assist.getWord(),targetDirPath));
+				assist.update();
 			}
 		}
 	}
 
-	private String processWordPic(String word, String targetDirPath) throws IOException {
+	private String processWordPic(int id, String word, String targetDirPath) throws IOException {
 		String picFilePath = targetDirPath+File.separator+"pic"+File.separator+word+".jpg";
 		File picFile = new File(picFilePath);
 		if(picFile.exists()) {
-			String targetName="http://res.ebooboo.cn/resource?filename=";
 			File distDir = picFile.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
-			String distName = word+".jpg";
+			String distName = id+".jpg";
 			File destFile = new File(distDir, distName);
 			FileUtil.copyFile(picFile, destFile , true);
-			return targetName+distName;
+			return distName;
 		} else {
 			return null;
 		}
 	}
 
-	private void loadAudio(int chapterId, String targetDirPath, int bookNo, int chapterNo) throws IOException {
+	private void loadAudio(int chapterId, String targetDirPath, int level, int bookNo, int chapterNo, int bookId) throws IOException {
 		File dir = new File(targetDirPath);
+		int index=1;
 		for(File file:dir.listFiles(new AudioFilter())) {
 			Audio audio = new Audio();
 			audio.setChapterId(chapterId);
-			audio.setUrl(this.processAudioFile(file, chapterId, chapterNo));
+			audio.setUrl(this.processAudioFile(file, level, bookNo, chapterNo, index, bookId));
 			audio.save();
+			index++;
 		}
 	}
 
-	private String processAudioFile(File file, int chapterId, int chapterNo) throws IOException {
-		String targetName="http://res.ebooboo.cn/resource?filename=";
+	private String processAudioFile(File file, int level, int bookNo, int chapterNo, int index, int bookId) throws IOException {
 		File distDir = file.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
-		String distName = "a-"+chapterId+"-"+chapterNo+".mp3";
+		String distName = "a-"+level+"-"+bookNo+"-"+chapterNo+"_"+index+".mp3";
 		File destFile = new File(distDir, distName);
 		FileUtil.copyFile(file, destFile , true);
-		return targetName+distName;
+		String chapterName = file.getName().substring(0, file.getName().length()-4);
+		Db.update("update book set name=? where level=? and no=?", chapterName, level, bookNo);
+		Db.update("update chapter set chapter_name=? where book_id=? and no=?", chapterName, bookId, chapterNo);
+		return distName;
 	}
 
 	private void loadChapterQuiz(int chapterId, String targetDirPath) {

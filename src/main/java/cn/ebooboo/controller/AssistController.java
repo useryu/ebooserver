@@ -2,11 +2,11 @@ package cn.ebooboo.controller;
 
 import java.util.List;
 
+import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 
 import cn.ebooboo.JfinalConfig;
-import cn.ebooboo.model.Quiz;
-import cn.ebooboo.model.QuizOption;
+import cn.ebooboo.model.Assist;
 import cn.ebooboo.service.LoaderService;
 
 public class AssistController extends BaseController{
@@ -17,12 +17,11 @@ public class AssistController extends BaseController{
 	
 	public void getBookAssist() {
 		String bookId = super.getPara("bookId");
+		String urlPrefix = PropKit.get("resourcePrefix");
 		bookId=StrKit.isBlank(bookId)?"0":bookId;
-		List<Quiz> quizs = Quiz.dao.find("select * from quiz where chapter_id in (select id from chapter where book_id=?)  order by chapter_id,no", bookId);
-		for(Quiz q:quizs) {
-			q.put("options", QuizOption.dao.find("select * from quiz_option where quiz_id=?", q.getId()));
-		}
-		renderJson(quizs);
+		List<Assist> assist = Assist.dao.find("select a.id,a.chapter_id,a.word,a.english_explanation,a.example,concat('"+ urlPrefix
+				+"',a.pic_url) as pic_url from assist a left join chapter c on a.chapter_id=c.id  where c.book_id=? order by c.no", bookId);
+		renderJson(assist);
 	}
 	
 	public void loadLevelQuiz() {
