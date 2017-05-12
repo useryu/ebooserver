@@ -22,7 +22,7 @@ import cn.ebooboo.model.BookResult;
 import cn.ebooboo.model.User;
 import cn.ebooboo.util.VoBuilder;
 
-public class AudioController extends BaseController{
+public class AudioController extends FrontBaseController{
 
 	public void playend() {
 		HttpServletResponse response = getResponse();

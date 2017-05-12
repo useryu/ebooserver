@@ -1,6 +1,7 @@
 package cn.ebooboo.common.interceptor;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
@@ -20,7 +21,8 @@ public class LoginInterceptor implements Interceptor {
 		Controller controller = inv.getController();
 		HttpServletRequest request = controller.getRequest();
 		if(JfinalConfig.IS_PRODUCT_ENV) {
-			LoginService service = new LoginService(request, controller.getResponse());
+			HttpServletResponse response = controller.getResponse();
+			LoginService service = new LoginService(request, response);
 			try {
 				UserInfo userInfo = service.check();
 				String userid = request.getHeader(Constants.WX_HEADER_ID);

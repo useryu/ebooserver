@@ -3,6 +3,7 @@ package cn.ebooboo.controller;
 import java.util.List;
 
 import com.jfinal.aop.Before;
+import com.jfinal.aop.Clear;
 import com.jfinal.kit.StrKit;
 
 import cn.ebooboo.JfinalConfig;
@@ -13,13 +14,12 @@ import cn.ebooboo.model.QuizOption;
 import cn.ebooboo.model.User;
 import cn.ebooboo.service.LoaderService;
 
-public class QuizController extends BaseController{
+public class QuizController extends FrontBaseController{
 
 	public void index() {
 		renderJson("test");
 	}
 	
-	@Before(LoginInterceptor.class)
 	public void submitLevelPoint() {
 		int point = super.getParaToInt("point",-1);
 		User user = User.dao.findById(getRequest().getAttribute("userid"));
@@ -36,7 +36,6 @@ public class QuizController extends BaseController{
 		renderJson(1);
 	}
 	
-	@Before(LoginInterceptor.class)
 	public void submitBookQuizPoint() {
 		int point = super.getParaToInt("point",-1);
 		int total = super.getParaToInt("total",-1);
@@ -79,6 +78,7 @@ public class QuizController extends BaseController{
 		renderJson(quizs);
 	}
 	
+	@Clear(LoginInterceptor.class)
 	public void loadLevelQuiz() {
 		String fileName = "d:/temp/quiz.txt";
 		if(JfinalConfig.IS_PRODUCT_ENV) {

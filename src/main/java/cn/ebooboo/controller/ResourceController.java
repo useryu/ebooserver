@@ -6,20 +6,24 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.jfinal.aop.Clear;
 import com.jfinal.kit.PropKit;
 
+import cn.ebooboo.common.interceptor.LoginInterceptor;
 import cn.ebooboo.service.LoaderService;
 
 
-public class ResourceController extends BaseController{
+public class ResourceController extends FrontBaseController{
 
 	public void index() {
 		HttpServletResponse response = getResponse();
 		HttpServletRequest request = getRequest();
 		String filename = super.getPara("filename");
+		super.getResponse().reset();
 		super.renderFile(filename);
 	}
 	
+	@Clear(LoginInterceptor.class)
 	public void load() {
 		LoaderService s = new LoaderService();
 		String level=super.getPara("level");
@@ -32,6 +36,7 @@ public class ResourceController extends BaseController{
 		super.renderText("ok");
 	}
 	
+	@Clear(LoginInterceptor.class)
 	public void remove() {
 		LoaderService s = new LoaderService();
 		int level=super.getParaToInt("level");

@@ -9,7 +9,7 @@ import cn.ebooboo.JfinalConfig;
 import cn.ebooboo.model.Assist;
 import cn.ebooboo.service.LoaderService;
 
-public class AssistController extends BaseController{
+public class AssistController extends FrontBaseController{
 
 	public void index() {
 		renderJson("test");
