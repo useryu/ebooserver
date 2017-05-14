@@ -1,5 +1,6 @@
 package cn.ebooboo.service;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -7,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
 
 import org.apache.log4j.Logger;
 
@@ -170,14 +173,22 @@ public class LoaderService {
 		}
 	}
 
-	private String processWordPic(int id, String word, String targetDirPath) throws IOException {
-		String picFilePath = targetDirPath+File.separator+"pic"+File.separator+word+".jpg";
-		File picFile = new File(picFilePath);
-		if(picFile.exists()) {
+	private String processWordPic(int id, final String word, String targetDirPath) throws IOException {
+		String picFilePath = targetDirPath+File.separator+"pic"+File.separator;
+		File dir = new File(picFilePath);
+		File[] files = dir.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File f) {
+				return f.getName().startsWith(word);
+			}});
+		
+		if(files.length>0) {
+			File picFile = files[0];
 			File distDir = picFile.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
 			String distName = id+".jpg";
-			File destFile = new File(distDir, distName);
-			FileUtil.copyFile(picFile, destFile , true);
+			File distFile = new File(distDir, distName);
+			BufferedImage source = ImageIO.read(picFile);
+			ImageIO.write(source, "JPG", distFile);
 			return distName;
 		} else {
 			return null;
