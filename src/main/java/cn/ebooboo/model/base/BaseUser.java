@@ -73,4 +73,11 @@ public abstract class BaseUser<M extends BaseUser<M>> extends Model<M> implement
 		return get("reading_book_id");
 	}
 
+	public java.lang.Integer getEffectSecond() {
+		return get("effect_second");
+	}
+	
+	public void setEffectSecond(java.lang.Integer effectSecond) {
+		set("effect_second", effectSecond);
+	}
 }
