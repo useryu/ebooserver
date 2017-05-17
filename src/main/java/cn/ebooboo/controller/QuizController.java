@@ -1,14 +1,17 @@
 package cn.ebooboo.controller;
 
+import java.util.Date;
 import java.util.List;
 
 import com.jfinal.aop.Before;
 import com.jfinal.aop.Clear;
+import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 
 import cn.ebooboo.JfinalConfig;
 import cn.ebooboo.common.interceptor.LoginInterceptor;
 import cn.ebooboo.model.BookResult;
+import cn.ebooboo.model.EffectHourHist;
 import cn.ebooboo.model.Quiz;
 import cn.ebooboo.model.QuizOption;
 import cn.ebooboo.model.User;
@@ -22,10 +25,12 @@ public class QuizController extends FrontBaseController{
 	
 	public void submitLevelPoint() {
 		int point = super.getParaToInt("point",-1);
-		User user = User.dao.findById(getRequest().getAttribute("userid"));
+		String userId = super.getAttrForStr("userid");
+		User user = User.dao.findById(userId);
+		Integer seconds=this.convertToEffectHour(point);
 		if(user==null) {
 			user = new User();
-			user.set("id",getRequest().getAttribute("userid"));
+			user.set("id",userId);
 			user.set("point", point);
 			user.save();
 		} else {
@@ -33,15 +38,28 @@ public class QuizController extends FrontBaseController{
 			user.set("point", point);
 			user.update();
 		}
+		EffectHourHist hist = new EffectHourHist();
+		hist.setUserId(userId);
+		hist.setDatetime(new Date());
+		hist.setSource(EffectHourHist.SOURCE_FIRST_QUIZ);
+		hist.setSeconds(seconds);
+		hist.save();
 		renderJson(1);
 	}
 	
+	// 初始测试对的题目数转为初始有效时
+	private Integer convertToEffectHour(int point) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 	public void submitBookQuizPoint() {
 		int point = super.getParaToInt("point",-1);
 		int total = super.getParaToInt("total",-1);
 		int bookId = super.getParaToInt("bookId",-1);
 		String userId = (String)getRequest().getAttribute("userid");
-		int isDone=point*0.1/total*1000>=80?1:0;//超过80%认为通过
+		double throshold = PropKit.getInt("quiz_throshold");
+		int isDone=point*0.1/total*1000>=throshold?1:0;//超过80%认为通过
 		BookResult br = BookResult.dao.findFirst("select * from book_result br where user_id=? and book_id=?", userId, bookId);
 		if(br==null) {
 			br = new BookResult();
