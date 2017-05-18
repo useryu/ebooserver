@@ -80,4 +80,12 @@ public abstract class BaseUser<M extends BaseUser<M>> extends Model<M> implement
 	public void setEffectSecond(java.lang.Integer effectSecond) {
 		set("effect_second", effectSecond);
 	}
+	
+	public java.lang.Integer getAdult() {
+		return get("adult");
+	}
+	
+	public void setAdult(java.lang.Integer isAdult) {
+		set("adult", isAdult);
+	}
 }
