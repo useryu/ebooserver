@@ -120,7 +120,7 @@
     <div class="footer-wrapper">
       <div class="container">
         <footer>
-          <small>&copy; 2017 深圳市声色教育有限公司 . All rights reserved.</small>
+          <small>&copy; 2017 深圳市声色教育有限公司 . All rights reserved. <a href="http://www.beian.gov.cn/portal/recordQuery" target="_blank">粤ICP备17058381号-1</a></small>
         </footer>
       </div>
       <!-- ./container -->

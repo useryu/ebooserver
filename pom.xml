@@ -14,7 +14,7 @@
 		<mysql.driver.version>5.1.6</mysql.driver.version>
 		<servletapi.version>3.1.0</servletapi.version>
 		<json.version>20160810</json.version>
-		<jfinal.version>3.0</jfinal.version>
+		<jfinal.version>3.1</jfinal.version>
 		<log4j.version>1.2.15</log4j.version>
 		<druid.version>1.0.29</druid.version>
 		<junit.version>4.10</junit.version>
