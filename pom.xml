@@ -16,18 +16,20 @@
 		<json.version>20160810</json.version>
 		<jfinal.version>3.0</jfinal.version>
 		<log4j.version>1.2.15</log4j.version>
-		<druid.version>1.0.29</druid.version>
+		<druid.version>1.0.31</druid.version>
 		<junit.version>4.10</junit.version>
 	</properties>
 
 
 	<dependencies>
-
+<!-- 
+		 -->
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>druid</artifactId>
 			<version>${druid.version}</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>com.jfinal</groupId>
 			<artifactId>jfinal</artifactId>

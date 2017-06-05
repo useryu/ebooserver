@@ -33,7 +33,7 @@ public class QuizController extends FrontBaseController{
 			user.set("point", point);
 			user.update();
 		}
-		renderJson(1);
+		renderJson(user);
 	}
 	
 	public void submitBookQuizPoint() {
