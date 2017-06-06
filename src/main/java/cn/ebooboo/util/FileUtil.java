@@ -14,6 +14,10 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.mp3.MP3AudioHeader;
+import org.jaudiotagger.audio.mp3.MP3File;
+
 import cn.ebooboo.common.IOUtil;
 
 public class FileUtil {
@@ -21,6 +25,18 @@ public class FileUtil {
 	private static final int BOM_LENGTH = 3;
 	private static final long FILE_COPY_BUFFER_SIZE = 30*1024*1024;
 	
+    public static int getMp3TrackLength(File mp3File) {  
+        try {  
+            MP3File f = (MP3File) AudioFileIO.read(mp3File);  
+            MP3AudioHeader audioHeader = (MP3AudioHeader)f.getAudioHeader();  
+            int len = audioHeader.getTrackLength();
+            f=null;
+			return len;  
+        } catch(Exception e) {  
+            return 0;  
+        }  
+    }  
+    
 	public static boolean hasBoom(BufferedInputStream in) throws IOException {
 		byte[] head = new byte[BOM_LENGTH];
 		in.mark(BOM_LENGTH);

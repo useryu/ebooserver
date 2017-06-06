@@ -13,6 +13,7 @@ import com.qcloud.weapp.authorization.LoginServiceException;
 import com.qcloud.weapp.authorization.UserInfo;
 
 import cn.ebooboo.JfinalConfig;
+import cn.ebooboo.vo.AdminResp;
 
 public class LoginInterceptor implements Interceptor {
 
@@ -20,6 +21,7 @@ public class LoginInterceptor implements Interceptor {
 	public void intercept(Invocation inv) {
 		Controller controller = inv.getController();
 		HttpServletRequest request = controller.getRequest();
+		boolean continueInvoke=true;
 		if(JfinalConfig.IS_PRODUCT_ENV) {
 			HttpServletResponse response = controller.getResponse();
 			LoginService service = new LoginService(request, response);
@@ -30,6 +32,7 @@ public class LoginInterceptor implements Interceptor {
 				controller.setAttr("userid", userid);
 			} catch (LoginServiceException e) {
 				e.printStackTrace();
+				continueInvoke=false;
 			} catch (ConfigurationException e) {
 				e.printStackTrace();
 			}
@@ -39,7 +42,12 @@ public class LoginInterceptor implements Interceptor {
 			controller.setAttr("wxUser", testUser);
 			controller.setAttr("userid", "test_userid");
 		}
-		inv.invoke();
+		if(continueInvoke) {
+			inv.invoke();
+		} else {
+			AdminResp resp = new AdminResp(0,"请登录");
+			controller.renderJson(resp);
+		}
 	}
 
 }

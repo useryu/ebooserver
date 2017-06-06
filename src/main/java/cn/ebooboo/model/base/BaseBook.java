@@ -40,4 +40,12 @@ public abstract class BaseBook<M extends BaseBook<M>> extends Model<M> implement
 	public void setLevel(java.lang.Integer level) {
 		set("level", level);
 	}
+	
+	public java.lang.Integer getEffectSecond() {
+		return get("effect_second");
+	}
+	
+	public void setEffectSecond(java.lang.Integer effectSecond) {
+		set("effect_second", effectSecond);
+	}
 }

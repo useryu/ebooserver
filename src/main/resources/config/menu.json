@@ -1,12 +1,26 @@
  {
      "button":[
       {
-           "name":"活动",
+           "name":"测试级别",
            "sub_button":[
            {	
                "type":"view",
-               "name":"最近活动",
-               "url":"https://12849517.ebooboo.cn/activity/list"
+               "name":"0-6岁测试",
+               "url":"https://www.ebooboo.cn/activity/forBaby"
+            },
+            {	
+                "type":"miniprogram",
+                 "name":"7-18岁测试",
+                 "url":"https://12849517.ebooboo.cn/",
+                 "appid":"wxb6d257422d854588",
+                 "pagepath":"pages/mytest/index?t=child"
+            },
+            {	
+                "type":"miniprogram",
+                 "name":"18+测试",
+                 "url":"https://12849517.ebooboo.cn/",
+                 "appid":"wxb6d257422d854588",
+                 "pagepath":"pages/mytest/index?t=adult"
             }]
        },
       {
@@ -18,6 +32,15 @@
                  "url":"https://12849517.ebooboo.cn/",
                  "appid":"wxb6d257422d854588",
                  "pagepath":"pages/index/index"
+            }]
+       },
+      {
+           "name":"更多",
+           "sub_button":[
+           {	
+               "name":"线下活动",
+               "type":"view",
+               "url":"https://www.ebooboo.cn/activity/list"
             }]
        }]
  }

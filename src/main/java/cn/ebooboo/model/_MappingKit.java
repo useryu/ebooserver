@@ -28,6 +28,7 @@ public class _MappingKit {
 		arp.addMapping("quiz_option", "id", QuizOption.class);
 		arp.addMapping("quiz_result", "id", QuizResult.class);
 		arp.addMapping("user", "id", User.class);
+		arp.addMapping("effect_hour_hist", "id", EffectHourHist.class);
 	}
 }
 

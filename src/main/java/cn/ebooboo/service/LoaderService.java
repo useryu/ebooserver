@@ -1,5 +1,6 @@
 package cn.ebooboo.service;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -7,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
 
 import org.apache.log4j.Logger;
 
@@ -111,11 +114,14 @@ public class LoaderService {
 				for(File cDir:dir.listFiles()) {
 					String cDirName = cDir.getName();
 					int chapterNo = Integer.parseInt(cDirName);
-					int bookId=this.createBookIfNotExist(level,bookNo,fileName);
+					Book book=this.createBookIfNotExist(level,bookNo,fileName);
+					int bookId= book.getId();
 					int chapterId=this.createChapterIfNotExist(bookId,chapterNo);
 					String chapterDir = targetDirPath+File.separator+bookNo+File.separator+chapterNo+File.separator;
 					this.loadChapterQuiz(chapterId, chapterDir);
-					this.loadAudio(chapterId, chapterDir, level, bookNo, chapterNo, bookId);
+					int effectSecond = this.loadAudio(chapterId, chapterDir, level, bookNo, chapterNo, bookId);
+					book.setEffectSecond(effectSecond);
+					book.update();
 					this.loadAssist(chapterId, chapterDir);
 				}
 			}
@@ -170,30 +176,41 @@ public class LoaderService {
 		}
 	}
 
-	private String processWordPic(int id, String word, String targetDirPath) throws IOException {
-		String picFilePath = targetDirPath+File.separator+"pic"+File.separator+word+".jpg";
-		File picFile = new File(picFilePath);
-		if(picFile.exists()) {
+	private String processWordPic(int id, final String word, String targetDirPath) throws IOException {
+		String picFilePath = targetDirPath+File.separator+"pic"+File.separator;
+		File dir = new File(picFilePath);
+		File[] files = dir.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File f) {
+				return f.getName().startsWith(word);
+			}});
+		
+		if(files.length>0) {
+			File picFile = files[0];
 			File distDir = picFile.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
 			String distName = id+".jpg";
-			File destFile = new File(distDir, distName);
-			FileUtil.copyFile(picFile, destFile , true);
+			File distFile = new File(distDir, distName);
+			BufferedImage source = ImageIO.read(picFile);
+			ImageIO.write(source, "JPG", distFile);
 			return distName;
 		} else {
 			return null;
 		}
 	}
 
-	private void loadAudio(int chapterId, String targetDirPath, int level, int bookNo, int chapterNo, int bookId) throws IOException {
+	private int loadAudio(int chapterId, String targetDirPath, int level, int bookNo, int chapterNo, int bookId) throws IOException {
 		File dir = new File(targetDirPath);
 		int index=1;
+		int totalEffectSecond=0;
 		for(File file:dir.listFiles(new AudioFilter())) {
 			Audio audio = new Audio();
 			audio.setChapterId(chapterId);
 			audio.setUrl(this.processAudioFile(file, level, bookNo, chapterNo, index, bookId));
 			audio.save();
 			index++;
+			totalEffectSecond+=FileUtil.getMp3TrackLength(file);
 		}
+		return totalEffectSecond;
 	}
 
 	private String processAudioFile(File file, int level, int bookNo, int chapterNo, int index, int bookId) throws IOException {
@@ -227,7 +244,7 @@ public class LoaderService {
 		return c.getId();
 	}
 
-	private int createBookIfNotExist(int level, int bookNo, String fileName) {
+	private Book createBookIfNotExist(int level, int bookNo, String fileName) {
 		Book book = Book.dao.findFirst("select * from book where no=?", level+"."+bookNo+"");
 		if(book==null) {
 			book=new Book();
@@ -236,7 +253,7 @@ public class LoaderService {
 			book.setLevel(level);
 			book.save();
 		}
-		return book.getId();
+		return book;
 	}
 
 	@Before(Tx.class)
