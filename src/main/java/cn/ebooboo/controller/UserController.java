@@ -1,13 +1,14 @@
 package cn.ebooboo.controller;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import com.jfinal.kit.PropKit;
+import com.jfinal.plugin.activerecord.Db;
 import com.qcloud.weapp.ConfigurationException;
 import com.qcloud.weapp.authorization.LoginService;
 import com.qcloud.weapp.authorization.LoginServiceException;
@@ -28,9 +29,9 @@ public class UserController extends FrontBaseController{
 			UserInfo userInfo = service.check();
 			
 			// 获取会话成功，输出获得的用户信息			
-			JSONObject result = new JSONObject();
-			JSONObject data = new JSONObject();
-			data.put("userInfo", new JSONObject(userInfo));
+			HashMap<String,Object> result = new HashMap<String,Object>();
+			HashMap<String,Object> data = new HashMap<String,Object>();
+			data.put("userInfo", userInfo);
 			logger.info(userInfo.getUserid());
 			User user = User.dao.findFirst("select * from user where id=?", userInfo.getUserid());
 			if(user==null) {
@@ -40,7 +41,8 @@ public class UserController extends FrontBaseController{
 				user = User.dao.findFirst("select * from user where id=?", userInfo.getUserid());
 			}
 			user = User.dao.findFirst("select * from user where id=?", userInfo.getUserid());
-			data.put("user", new JSONObject(user));
+			setEffectHour(user);
+			data.put("user", user);
 
 			Book book = Book.dao.findFirst("select * from book where id=?", user.getReadingBookId());
 			if(book!=null) {
@@ -48,27 +50,53 @@ public class UserController extends FrontBaseController{
 				book.put("bookResult",br);
 			}
 			book=book==null?new Book():book;
-			data.put("book", new JSONObject(book));
+			data.put("book", book);
 
 			
 			result.put("code", 0);
 			result.put("message", "OK");
 			result.put("data", data);			
-			response.setContentType("application/json");
-			response.setCharacterEncoding("utf-8");
-			response.getWriter().write(result.toString());			
+			super.renderJson(result);		
 		} catch (LoginServiceException e) {
 			e.printStackTrace();
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		}catch (ConfigurationException e) {
 			e.printStackTrace();
 		}
-		super.renderNull();
 	}
-	
+
+	private void setEffectHour(User user) {
+		int effectHour = this.getEffectHourFromUser(user);
+		int toNextLevelHour = this.getToNextLevelHourFromUser(user);
+		if(effectHour==0) {
+			user.put("effectHour","不到1小时");
+		} else {
+			user.put("effectHour",effectHour+"小时");
+		}
+		user.put("toNextLevelHour",toNextLevelHour+"小时");
+	}
+
+	private int getToNextLevelHourFromUser(User user) {
+		BigDecimal levelTotalHour = Db.queryFirst("select IFNULL(sum(effect_second),0) from book where level=?", user.getLevel());		
+		BigDecimal passedLevelTotalHour = Db.queryFirst("select IFNULL(sum(effect_second),0) from book b left join book_result br on b.id=br.book_id where br.quiz_is_done=1 and level=? and br.user_id=?", user.getLevel(), user.getId());
+		Integer leftSeconds = levelTotalHour.intValue();
+		if(passedLevelTotalHour!=null && passedLevelTotalHour.intValue()>0) {
+			leftSeconds = levelTotalHour.intValue()-passedLevelTotalHour.intValue();
+		}
+		int h=0;
+		if(leftSeconds!=null) {
+			h = leftSeconds/60/60;
+		}
+		return h;
+	}
+
+	private int getEffectHourFromUser(User user) {
+		Integer s = user.getEffectSecond();
+		int h=0;
+		if(s!=null) {
+			h = s/60/60;
+		}
+		return h;
+	}
 	public void switchToBook() {
 		String bookNoStr=super.getPara("bookNo");
 		String[] strs = bookNoStr.split("\\.");
@@ -83,9 +111,9 @@ public class UserController extends FrontBaseController{
 				UserInfo userInfo = service.check();
 				
 				// 获取会话成功，输出获得的用户信息			
-				JSONObject result = new JSONObject();
-				JSONObject data = new JSONObject();
-				data.put("userInfo", new JSONObject(userInfo));
+				HashMap<String,Object> result = new HashMap<String,Object>();
+				HashMap<String,Object> data = new HashMap<String,Object>();
+				data.put("userInfo", userInfo);
 				logger.info(userInfo.getUserid());
 				User user = User.dao.findFirst("select * from user where id=?", userInfo.getUserid());
 				if(user==null) {
@@ -95,6 +123,7 @@ public class UserController extends FrontBaseController{
 					user = User.dao.findFirst("select * from user where id=?", userInfo.getUserid());
 				}
 				user = User.dao.findFirst("select * from user where id=?", userInfo.getUserid());
+				setEffectHour(user);
 	
 				Book book = Book.dao.findFirst("select * from book where level=? and no=?",level, bookNo);
 				if(book!=null) {
@@ -105,29 +134,23 @@ public class UserController extends FrontBaseController{
 					user.update();
 				}
 				book=book==null?new Book():book;
-				data.put("book", new JSONObject(book));
+				data.put("book", book);
 	
 				
-				data.put("user", new JSONObject(user));
+				data.put("user", user);
 				result.put("code", 0);
 				result.put("message", "OK");
-				result.put("data", data);			
-				response.setContentType("application/json");
-				response.setCharacterEncoding("utf-8");
-				response.getWriter().write(result.toString());			
+				result.put("data", data);
+				super.renderJson(result);
 			} catch (LoginServiceException e) {
 				e.printStackTrace();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} catch (ConfigurationException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			}catch (ConfigurationException e) {
 				e.printStackTrace();
 			}
 		} else {
 			
 		}
-		super.renderNull();
 	}
+
 	
 }

@@ -9,6 +9,7 @@ import com.jfinal.aop.Clear;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.tx.Tx;
 
 import cn.ebooboo.JfinalConfig;
 import cn.ebooboo.common.interceptor.LoginInterceptor;
@@ -52,10 +53,12 @@ public class QuizController extends FrontBaseController{
 		renderJson("test");
 	}
 	
+	//初始的级别测试后，得到用户初始有效时长
+	@Before(Tx.class)
 	public void submitLevelPoint() {
 		int point = super.getParaToInt("point",-1);
-		String userId = super.getPara("userid");
-		String adult = super.getPara("adult");
+		String userId = (String)getRequest().getAttribute("userid");
+		int adult = super.getParaToInt("adult");
 		User user = User.dao.findById(userId);
 		if(user==null) {
 			user = new User();
@@ -65,16 +68,18 @@ public class QuizController extends FrontBaseController{
 		} else {
 			user.set("pre_point", user.getInt("point"));
 			user.set("point", point);
-			user.setAdult(Integer.parseInt(adult));
+			user.setAdult(adult);
 			user.update();
 		}
-		Integer seconds = this.convertToEffectHour(point,user.getAdult()==1);
+		Integer seconds = this.convertToEffectHour(point,user);
 		EffectHourHist hist = new EffectHourHist();
 		hist.setUserId(userId);
 		hist.setDatetime(new Date());
 		hist.setSource(EffectHourHist.SOURCE_FIRST_QUIZ);
 		hist.setSeconds(seconds);
 		hist.save();
+		user.setEffectSecond(seconds);
+		user.update();
 		renderJson(seconds);
 	}
 	
@@ -84,14 +89,16 @@ public class QuizController extends FrontBaseController{
 	 * @param point
 	 * @return
 	 */
-	private Integer convertToEffectHour(int point, boolean isAdult) {
+	private Integer convertToEffectHour(int point,  User user) {
 		String sql = "select sum(effect_second) from book where level<=?";
 		int level=1;
-		if(isAdult) {
+		if(user.getAdult()==1) {
 			level=this.convertAdultPointToLevel(point);
 		}else {
 			level=this.convertChildPointToLevel(point);
 		}
+		user.setLevel(level);
+		user.update();
 		BigDecimal effectSeconds = Db.queryFirst(sql, level);
 		return effectSeconds.intValue();
 	}
@@ -148,24 +155,32 @@ public class QuizController extends FrontBaseController{
 			br.setUserId(userId);
 			br.setBookId(bookId);
 			br.save();
+			br.put("passed","0");
 		} else {
-			br.setQuizIsDone(isDone);
-			br.update();
+			if(br.getQuizIsDone()==1) {
+				//no need submit again
+				br.put("passed","1");
+			}else {
+				br.put("passed","0");
+				br.setQuizIsDone(isDone);
+				br.update();
+				
+				User user = User.dao.findById(userId);
+				BigDecimal levelTotalHour = Db.queryFirst("select IFNULL(sum(effect_second),0) from book where level=?", user.getLevel());
+				BigDecimal passedLevelTotalHour = Db.queryFirst("select IFNULL(sum(effect_second),0) from book b left join book_result br on b.id=br.book_id where br.quiz_is_done=1 and level=? and br.user_id=?", user.getLevel(), userId);
+				logger.info(passedLevelTotalHour+","+levelTotalHour+","+PropKit.getInt("level_throshold"));
+				int ifUpgradeToNextLevel=0;
+				if(passedLevelTotalHour!=null && passedLevelTotalHour.intValue()>0) {
+					double levelThroshold = PropKit.getInt("level_throshold");
+					ifUpgradeToNextLevel=passedLevelTotalHour.intValue()*0.1/levelTotalHour.intValue()*1000>=levelThroshold?1:0;//超过throshold认为通过
+				}
+				//看是不是可以升级了
+				br.put("ifUpgradeToNextLevel",ifUpgradeToNextLevel);
+				br.put("levelTotalHour",levelTotalHour==null?0:levelTotalHour.doubleValue()/360);
+				br.put("passedLevelTotalHour",passedLevelTotalHour==null?0:passedLevelTotalHour.doubleValue()/360);
+			}
 		}
 
-		User user = User.dao.findById(userId);
-		BigDecimal levelTotalHour = Db.queryFirst("select IFNULL(sum(effect_second),0) from book where level=?", user.getLevel());
-		BigDecimal passedLevelTotalHour = Db.queryFirst("select IFNULL(sum(effect_second),0) from book b left join book_result br on b.id=br.book_id where br.quiz_is_done=1 and level=? and br.user_id=?", user.getLevel(), userId);
-		logger.info(passedLevelTotalHour+","+levelTotalHour+","+PropKit.getInt("level_throshold"));
-		int ifUpgradeToNextLevel=0;
-		if(passedLevelTotalHour!=null && passedLevelTotalHour.intValue()>0) {
-			double levelThroshold = PropKit.getInt("level_throshold");
-			ifUpgradeToNextLevel=passedLevelTotalHour.intValue()*0.1/levelTotalHour.intValue()*1000>=levelThroshold?1:0;//超过throshold认为通过
-		}
-		//看是不是可以升级了
-		br.put("ifUpgradeToNextLevel",ifUpgradeToNextLevel);
-		br.put("levelTotalHour",levelTotalHour==null?0:levelTotalHour.doubleValue()/360);
-		br.put("passedLevelTotalHour",passedLevelTotalHour==null?0:passedLevelTotalHour.doubleValue()/360);
 		renderJson(br);
 	}
 	

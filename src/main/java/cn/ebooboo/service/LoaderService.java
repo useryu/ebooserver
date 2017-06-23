@@ -87,8 +87,10 @@ public class LoaderService {
 			}
 			
 		});
-		for(File f:files) {
-			if(f.exists())f.delete();
+		if(files!=null) {
+			for(File f:files) {
+				if(f.exists())f.delete();
+			}
 		}
 	}
 
@@ -105,7 +107,7 @@ public class LoaderService {
 		String[] no = zipFile.getName().split("\\.");
 		if (no.length == 2) {
 			int level = Integer.parseInt(no[0]);
-			ZipUtil.unzip(fileName);
+			//ZipUtil.unzip(fileName);
 			File unzipDir = new File(zipFile.getParent(),no[0]);
 			String targetDirPath = unzipDir.getPath();
 			for(File dir:unzipDir.listFiles()) {
@@ -125,7 +127,7 @@ public class LoaderService {
 					this.loadAssist(chapterId, chapterDir);
 				}
 			}
-			zipFile.delete();
+			//zipFile.delete();
 		} else {
 			logger.info(fileName+" not a valid zip file");
 		}
@@ -176,7 +178,7 @@ public class LoaderService {
 		}
 	}
 
-	private String processWordPic(int id, final String word, String targetDirPath) throws IOException {
+	private String processWordPic(int id, final String word, String targetDirPath){
 		String picFilePath = targetDirPath+File.separator+"pic"+File.separator;
 		File dir = new File(picFilePath);
 		File[] files = dir.listFiles(new FileFilter() {
@@ -185,13 +187,19 @@ public class LoaderService {
 				return f.getName().startsWith(word);
 			}});
 		
-		if(files.length>0) {
+		if(files!=null && files.length>0) {
 			File picFile = files[0];
-			File distDir = picFile.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
+			File distDir = new File(PropKit.get("file_download_path"));
 			String distName = id+".jpg";
 			File distFile = new File(distDir, distName);
-			BufferedImage source = ImageIO.read(picFile);
-			ImageIO.write(source, "JPG", distFile);
+			BufferedImage source;
+			try {
+				source = ImageIO.read(picFile);
+				ImageIO.write(source, "JPG", distFile);
+			} catch (Exception e) {
+				e.printStackTrace();
+				distName=null;
+			}
 			return distName;
 		} else {
 			return null;
@@ -214,7 +222,7 @@ public class LoaderService {
 	}
 
 	private String processAudioFile(File file, int level, int bookNo, int chapterNo, int index, int bookId) throws IOException {
-		File distDir = file.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
+		File distDir = new File(PropKit.get("file_download_path"));
 		String distName = "a-"+level+"-"+bookNo+"-"+chapterNo+"_"+index+".mp3";
 		File destFile = new File(distDir, distName);
 		FileUtil.copyFile(file, destFile , true);
@@ -245,7 +253,7 @@ public class LoaderService {
 	}
 
 	private Book createBookIfNotExist(int level, int bookNo, String fileName) {
-		Book book = Book.dao.findFirst("select * from book where no=?", level+"."+bookNo+"");
+		Book book = Book.dao.findFirst("select * from book where level=? and no=?", level+"", bookNo+"");
 		if(book==null) {
 			book=new Book();
 			book.setNo(bookNo);

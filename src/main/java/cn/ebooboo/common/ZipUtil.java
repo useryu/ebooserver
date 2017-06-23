@@ -137,7 +137,7 @@ public final class ZipUtil {
 					}
 				}
 				zis.closeEntry();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw new RuntimeException(e);
 			} finally {
 				IOUtil.closeQuietly(zis, bos);

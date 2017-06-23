@@ -15,6 +15,7 @@ import cn.ebooboo.service.LoaderService;
 
 public class ResourceController extends FrontBaseController{
 
+	@Clear(LoginInterceptor.class)
 	public void index() {
 		HttpServletResponse response = getResponse();
 		HttpServletRequest request = getRequest();
@@ -28,9 +29,10 @@ public class ResourceController extends FrontBaseController{
 		LoaderService s = new LoaderService();
 		String level=super.getPara("level");
 		try {
-			s.loadAll(PropKit.get("file_download_path")+File.separator+"zip"+File.separator+level+".zip");
-		} catch (IOException e) {
+			s.loadAll(PropKit.get("res_load_path")+File.separator+level+".zip");
+		} catch (Throwable e) {
 			e.printStackTrace();
+			logger.info(e.getMessage());
 			super.renderJson(e.getMessage());
 		}
 		super.renderText("ok");
