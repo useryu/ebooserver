@@ -2,6 +2,7 @@ package cn.ebooboo.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -160,4 +162,54 @@ public class FileUtil {
 		doCopyFile(srcFile, destFile, preserveFileDate);
 	}
 
+	
+
+    public static FileOutputStream openOutputStream(File file, boolean append) throws IOException {
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                throw new IOException("File '" + file + "' exists but is a directory");
+            }
+            if (file.canWrite() == false) {
+                throw new IOException("File '" + file + "' cannot be written to");
+            }
+        } else {
+            File parent = file.getParentFile();
+            if (parent != null) {
+                if (!parent.mkdirs() && !parent.isDirectory()) {
+                    throw new IOException("Directory '" + parent + "' could not be created");
+                }
+            }
+        }
+        return new FileOutputStream(file, append);
+    }
+    
+    public static void writeStringToFile(File file, String data, Charset encoding, boolean append) throws IOException {
+        OutputStream out = null;
+        try {
+            out = openOutputStream(file, append);
+            write(data, out, encoding);
+            out.close(); // don't swallow close Exception if copy completes normally
+        } finally {
+            closeQuietly(out);
+        }
+    }
+    
+    public static void write(String data, OutputStream output, Charset encoding) throws IOException {
+        if (data != null) {
+            output.write(data.getBytes(Charsets.toCharset(encoding)));
+        }
+    }
+    
+    public static void closeQuietly(OutputStream output) {
+        closeQuietly((Closeable)output);
+    }
+    public static void closeQuietly(Closeable closeable) {
+        try {
+            if (closeable != null) {
+                closeable.close();
+            }
+        } catch (IOException ioe) {
+            // ignore
+        }
+    }
 }

@@ -138,4 +138,11 @@ public class UserInfo {
 	public void setUserid(String userid) {
 		this.userid = userid;
 	}
+
+	@Override
+	public String toString() {
+		return "UserInfo [userid=" + userid + ", openId=" + openId + ", nickName=" + nickName + ", avatarUrl="
+				+ avatarUrl + ", gender=" + gender + ", language=" + language + ", city=" + city + ", province="
+				+ province + ", country=" + country + "]";
+	}
 }

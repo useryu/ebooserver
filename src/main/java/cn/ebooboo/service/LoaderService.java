@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -13,7 +15,9 @@ import javax.imageio.ImageIO;
 
 import org.apache.log4j.Logger;
 
+import com.alibaba.fastjson.serializer.FilterUtils;
 import com.jfinal.aop.Before;
+import com.jfinal.kit.FileKit;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
@@ -38,7 +42,14 @@ public class LoaderService {
 
 		@Override
 		public boolean accept(File pathname) {
-			return pathname.getName().endsWith(".mp3");
+			String name = pathname.getName();
+			int dotIndex = name.lastIndexOf(".");
+			if(dotIndex>0) {
+				String sufix = name.substring(dotIndex);
+				return sufix.equalsIgnoreCase(".mp3");
+			} else {
+				return false;
+			}
 		}
 		
 	}
@@ -70,6 +81,7 @@ public class LoaderService {
 			this.removePicFile(assistIds);
 			Db.update("delete from assist where chapter_id in (select id from chapter where book_id=?)", bookId);
 			Db.update("delete from audio where chapter_id in (select id from chapter where book_id=?)", bookId);
+			Db.update("delete from quiz_option where quiz_id in ( select id from quiz where chapter_id in (select id from chapter where book_id=?))", bookId);
 			Db.update("delete from quiz where chapter_id in (select id from chapter where book_id=?)", bookId);
 			Db.update("delete from chapter where book_id=?", bookId);
 			Db.update("delete from book where level=?", level);
@@ -102,34 +114,25 @@ public class LoaderService {
 	}
 
 	@Before(Tx.class)
-	public void loadAll(String fileName) throws IOException {
-		File zipFile = new File(fileName);
-		String[] no = zipFile.getName().split("\\.");
-		if (no.length == 2) {
-			int level = Integer.parseInt(no[0]);
-			//ZipUtil.unzip(fileName);
-			File unzipDir = new File(zipFile.getParent(),no[0]);
-			String targetDirPath = unzipDir.getPath();
-			for(File dir:unzipDir.listFiles()) {
-				String bookDir = dir.getName();
-				int bookNo =Integer.parseInt(bookDir);
-				for(File cDir:dir.listFiles()) {
-					String cDirName = cDir.getName();
-					int chapterNo = Integer.parseInt(cDirName);
-					Book book=this.createBookIfNotExist(level,bookNo,fileName);
-					int bookId= book.getId();
-					int chapterId=this.createChapterIfNotExist(bookId,chapterNo);
-					String chapterDir = targetDirPath+File.separator+bookNo+File.separator+chapterNo+File.separator;
-					this.loadChapterQuiz(chapterId, chapterDir);
-					int effectSecond = this.loadAudio(chapterId, chapterDir, level, bookNo, chapterNo, bookId);
-					book.setEffectSecond(effectSecond);
-					book.update();
-					this.loadAssist(chapterId, chapterDir);
-				}
+	public void loadAll(String fileName, String level) throws IOException {
+		File sourceDir = new File(fileName);
+		File levelDir = new File(sourceDir,level+"");
+		for(File bookHoldDir:levelDir.listFiles()) {
+			String bookDirName = bookHoldDir.getName();
+			int bookNo =Integer.parseInt(bookDirName);
+			logger.info("loading bookno:"+bookNo);
+			for(File chapterHoldDir:bookHoldDir.listFiles()) {
+				String chapterDirName = chapterHoldDir.getName();
+				int chapterNo = Integer.parseInt(chapterDirName);
+				Book book=this.createBookIfNotExist(Integer.parseInt(level),bookNo,fileName);
+				int bookId= book.getId();
+				int chapterId=this.createChapterIfNotExist(bookId,chapterNo);
+				this.loadChapterQuiz(chapterId, chapterHoldDir.getPath());
+				int effectSecond = this.loadAudio(chapterId, chapterHoldDir.getPath(), Integer.parseInt(level), bookNo, chapterNo, bookId);
+				book.setEffectSecond(effectSecond);
+				book.update();
+				//this.loadAssist(chapterId, chapterHoldDir.getPath());
 			}
-			//zipFile.delete();
-		} else {
-			logger.info(fileName+" not a valid zip file");
 		}
 	}
 	
@@ -216,7 +219,7 @@ public class LoaderService {
 			audio.setUrl(this.processAudioFile(file, level, bookNo, chapterNo, index, bookId));
 			audio.save();
 			index++;
-			totalEffectSecond+=FileUtil.getMp3TrackLength(file);
+			//totalEffectSecond+=FileUtil.getMp3TrackLength(file);
 		}
 		return totalEffectSecond;
 	}
@@ -333,6 +336,35 @@ public class LoaderService {
 		Pattern pattern = Pattern.compile("^[a-zA-Z] .*");
 		Matcher isNum = pattern.matcher(line.trim());
 		return isNum.matches();
+	}
+
+	public void getEffect() {
+		for(int level=1;level<=10;level++) {
+			File levelDir = new File(PropKit.get("res_load_path"),level+"");
+			StringBuffer updateEffectSqlBf = new StringBuffer();
+			updateEffectSqlBf.append("update book set effect_second=0 where level="+level+";"+System.lineSeparator());
+			for(File bookHoldDir:levelDir.listFiles()) {
+				String bookDirName = bookHoldDir.getName();
+				int bookNo =Integer.parseInt(bookDirName);
+				logger.info("loading bookno:"+bookNo);
+				for(File chapterHoldDir:bookHoldDir.listFiles()) {
+					String chapterDirName = chapterHoldDir.getName();
+					File[] audioFile = chapterHoldDir.listFiles(new AudioFilter());
+					if(audioFile.length>0) {
+						File mp3File = audioFile[0];
+						int effectSecond = FileUtil.getMp3TrackLength(mp3File);
+						updateEffectSqlBf.append("update book set effect_second=effect_second+"+effectSecond+" where level="+level+" and no="+bookNo+";"+System.lineSeparator());
+					}
+				}
+			}
+			File outPutFile=new File(levelDir.getParent(),level+".sql");
+			Charset utf8 = Charset.forName("utf8");
+			try {
+				FileUtil.writeStringToFile(outPutFile, updateEffectSqlBf.toString(), utf8 , false);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

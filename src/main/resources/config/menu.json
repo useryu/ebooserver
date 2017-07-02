@@ -3,11 +3,6 @@
       {
            "name":"级别测试",
            "sub_button":[
-           {	
-               "type":"view",
-               "name":"0-6岁婴幼儿",
-               "url":"https://www.ebooboo.cn/activity/forBaby"
-            },
             {	
                 "type":"miniprogram",
                  "name":"7-17岁青少年",
@@ -38,9 +33,19 @@
            "name":"更多...",
            "sub_button":[
            {	
-               "name":"线下活动",
+               "name":"故事国读书会",
                "type":"view",
-               "url":"https://www.ebooboo.cn/activity/list"
+               "url":"http://mp.weixin.qq.com/s/yg01zlFhBmuTcAZyPmcTOg"
+            },
+           {	
+               "name":"关于易步阅读馆",
+               "type":"view",
+               "url":"https://mp.weixin.qq.com/s/qoNNUx-zECeTAvlntTxeTw"
+            },
+           {	
+               "name":"破冰话题",
+               "type":"view",
+               "url":"http://mp.weixin.qq.com/s/lvbBHzZ9T4uRz01sZqy9tQ"
             },
            {	
                "name":"外语学习乾坤大挪移",

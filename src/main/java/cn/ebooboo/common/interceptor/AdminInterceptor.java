@@ -1,5 +1,7 @@
 package cn.ebooboo.common.interceptor;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -27,8 +29,12 @@ public class AdminInterceptor implements Interceptor {
 		HttpSession session = request.getSession();
 		Object admin = session.getAttribute("login_admin");
 		if (admin == null && !inv.getActionKey().contains("login")) {
-			request.setAttribute("errorMsg", "请先登录");
-			inv.invoke();
+			try {
+				response.sendRedirect(request.getContextPath()+"/admin");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			//inv.invoke();
 		} else {
 			inv.invoke();
 		}

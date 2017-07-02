@@ -64,6 +64,22 @@ public abstract class BaseUser<M extends BaseUser<M>> extends Model<M> implement
 	public java.lang.Integer getLevel() {
 		return get("level");
 	}
+
+	public void setBaseLevel(java.lang.Integer baseLevel) {
+		set("base_level", baseLevel);
+	}
+
+	public java.lang.Integer getBaseLevel() {
+		return get("base_level");
+	}
+
+	public void setBaseEffectSecond(java.lang.Integer baseEffectSecond) {
+		set("base_effect_second", baseEffectSecond);
+	}
+
+	public java.lang.Integer getBaseEffectSecond() {
+		return get("base_effect_second");
+	}
 	
 	public void setReadingBookId(java.lang.Integer bookId) {
 		set("reading_book_id", bookId);
@@ -87,5 +103,13 @@ public abstract class BaseUser<M extends BaseUser<M>> extends Model<M> implement
 	
 	public void setAdult(java.lang.Integer isAdult) {
 		set("adult", isAdult);
+	}
+	
+	public java.lang.String getName() {
+		return get("name");
+	}
+	
+	public void setName(java.lang.String name) {
+		set("name", name);
 	}
 }

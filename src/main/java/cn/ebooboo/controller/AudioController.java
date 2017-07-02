@@ -108,7 +108,8 @@ public class AudioController extends FrontBaseController{
 		try {
 			String urlPrefix = PropKit.get("resourcePrefix");
 			// 调用检查登录接口，成功后可以获得用户信息，进行正常的业务请求
-			String query= "SELECT a.id, CONCAT('"+urlPrefix +"',a.url) as url ,c.chapter_name as chaptername,b.name as bookname FROM `audio` a left join chapter c on a.chapter_id=c.id left join book b on c.book_id=b.id where b.id=?";
+			String query= "SELECT a.id, CONCAT('"+urlPrefix +"',a.url) as url ,c.chapter_name as chaptername,b.name as bookname "
+					+ "FROM `audio` a left join chapter c on a.chapter_id=c.id left join book b on c.book_id=b.id where b.id=? order by c.no";
 			// 获取会话成功，输出获得的用户信息			
 			JSONObject result = new JSONObject();
 			List<Record> list = Db.find(query, Integer.parseInt(bookId));

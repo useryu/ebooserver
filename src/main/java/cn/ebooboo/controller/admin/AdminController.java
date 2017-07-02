@@ -5,11 +5,36 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
+import com.jfinal.aop.Clear;
+
+import cn.ebooboo.common.interceptor.AdminInterceptor;
 import cn.ebooboo.model.Admin;
 import cn.ebooboo.vo.AdminLoginResp;
 
 public class AdminController extends BaseAdminController {
+	
+	@Clear(AdminInterceptor.class)
+	public void index() {
+		super.render("/admin/index.jsp");
+	}
 
+	public void book() {
+		super.render("/admin/book.jsp");
+	}
+	
+	public void chapter() {
+		super.render("/admin/chapter.jsp");
+	}
+
+	public void updateBook() {
+		super.renderJson();
+	}
+	
+	public void updateChapter() {
+		super.renderJson();
+	}
+
+	@Clear(AdminInterceptor.class)
 	public void login() {
 		HttpServletResponse response = getResponse();
 		HttpServletRequest request = getRequest();

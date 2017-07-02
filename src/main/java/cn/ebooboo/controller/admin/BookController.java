@@ -10,7 +10,7 @@ import cn.ebooboo.vo.AdminResp;
 public class BookController extends BaseAdminController {
 
 	public void list() {
-		List<Book> books = new Book().find("select * from book");
+		List<Book> books = new Book().find("select * from book order by level,no");
 		renderJson(books);
 	}
 	

@@ -29,7 +29,7 @@ public class ResourceController extends FrontBaseController{
 		LoaderService s = new LoaderService();
 		String level=super.getPara("level");
 		try {
-			s.loadAll(PropKit.get("res_load_path")+File.separator+level+".zip");
+			s.loadAll(PropKit.get("res_load_path"),level);
 		} catch (Throwable e) {
 			e.printStackTrace();
 			logger.info(e.getMessage());
@@ -37,13 +37,25 @@ public class ResourceController extends FrontBaseController{
 		}
 		super.renderText("ok");
 	}
-	
+
 	@Clear(LoginInterceptor.class)
 	public void remove() {
 		LoaderService s = new LoaderService();
 		int level=super.getParaToInt("level");
 		try {
 			s.removeAllInLevel(level);
+		} catch (Exception e) {
+			e.printStackTrace();
+			super.renderJson(e.getMessage());
+		}
+		super.renderText("ok");
+	}
+	
+	@Clear(LoginInterceptor.class)
+	public void getEffect() {
+		LoaderService s = new LoaderService();
+		try {
+			s.getEffect();
 		} catch (Exception e) {
 			e.printStackTrace();
 			super.renderJson(e.getMessage());
